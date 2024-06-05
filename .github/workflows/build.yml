@@ -12,7 +12,7 @@ permissions:
   packages: write
 jobs:
   build:
-    name: Build: Caddy
+    name: "Build: Caddy"
     runs-on: ubuntu-latest
 
     steps:
