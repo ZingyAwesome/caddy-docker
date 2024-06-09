@@ -15,8 +15,6 @@ FROM caddy:2.8.4-alpine
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
 RUN addgroup -g 950 -S caddy; \
-    addgroup -g 951 -S certs; \
-    adduser -u 950 -D -S -G caddy caddy; \
-    adduser caddy certs;
+    adduser -u 950 -D -S -G caddy caddy;
 
 USER caddy
