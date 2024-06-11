@@ -7,7 +7,6 @@ RUN xcaddy build \
     --with github.com/mholt/caddy-l4 \
     --with github.com/mholt/caddy-ratelimit \
     --with github.com/RussellLuo/caddy-ext/layer4 \
-    --with github.com/ueffel/caddy-brotli \
     --with github.com/WeidiDeng/caddy-cloudflare-ip
 
 FROM caddy:2.8.4-alpine
