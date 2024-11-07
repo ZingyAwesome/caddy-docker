@@ -1,4 +1,4 @@
-FROM caddy:2.8.4-builder-alpine AS builder
+FROM caddy:2.9.0-beta.3-builder-alpine AS builder
 
 RUN xcaddy build \
     --with github.com/caddy-dns/cloudflare \
@@ -6,9 +6,8 @@ RUN xcaddy build \
     --with github.com/mholt/caddy-events-exec \
     --with github.com/mholt/caddy-l4 \
     --with github.com/mholt/caddy-ratelimit \
-    --with github.com/RussellLuo/caddy-ext/layer4 \
     --with github.com/WeidiDeng/caddy-cloudflare-ip
 
-FROM caddy:2.8.4-alpine
+FROM caddy:2.9.0-beta.3-alpine
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
