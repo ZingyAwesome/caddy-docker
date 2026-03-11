@@ -20,6 +20,7 @@ on:
       - master
     paths:
       - "Dockerfile"
+      - "version.txt"
 
 permissions:
   actions: read
