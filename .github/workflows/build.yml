@@ -58,7 +58,7 @@ jobs:
             CUSTOM_CORE=""
           fi
 
-          BASE="ghcr.io/${{ github.repository_owner}}/caddy"
+          BASE="ghcr.io/${GITHUB_REPOSITORY_OWNER@L}/caddy"
           TAGS="$BASE:$VERSION"
           if [ "${{ github.event_name }}" == "push" ] || [ "${{ github.event.inputs.tag_latest }}" == "true" ]; then
             TAGS="$TAGS,$BASE:latest"
