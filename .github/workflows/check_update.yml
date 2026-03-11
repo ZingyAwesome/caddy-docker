@@ -1,0 +1,57 @@
+name: check for caddy updates
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *" # Daily
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-update:
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Get latest release details
+        uses: actions/github-script@v8
+        id: release
+        with:
+          script: |
+            const release = await github.rest.releases.getLatest({owner: "caddyserver", repo: "caddy"});
+            core.setOutput("TAG", release.data.tag_name);
+            core.setOutput("BODY", release.data.body);
+
+      - name: Check and update version
+        id: check
+        env:
+          TAG: ${{ steps.release.outputs.TAG }}
+        run: |
+          CURRENT_VERSION=$(cat version.txt)
+          if [ "$CURRENT_VERSION" != "$TAG" ]; then
+            echo "$TAG" > version.txt
+            echo "OLD_VERSION=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "DO_PR=true" >> $GITHUB_OUTPUT
+          else
+            echo "DO_PR=false" >> $GITHUB_OUTPUT
+
+      - name: Create pull request
+        if: steps.check.outputs.DO_PR == "true"
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: Bump caddy from ${{ steps.check.outputs.OLD_VERSION }} to ${{ steps.release.outputs.TAG }}
+          title: Bump caddy from ${{ steps.check.outputs.OLD_VERSION }} to ${{ steps.release.outputs.TAG }}
+          body: |
+            Automated caddy update from ${{ steps.check.outputs.OLD_VERSION }} to ${{ steps.release.outputs.TAG }}
+            <details>
+            <summary>Release notes</summary>
+            <blockquote>
+
+            ${{ steps.release.outputs.BODY }}
+
+            </blockquote>
+            </details>
+          labels: dependencies
+          branch: update-caddy-${{ steps.release.outputs.TAG }}
+          delete-branch: true

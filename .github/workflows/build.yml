@@ -12,7 +12,7 @@ on:
         type: string
       tag_latest:
         description: "Tag build as latest?"
-        default: false
+        default: true
         required: false
         type: boolean
   push:
