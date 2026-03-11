@@ -1,6 +1,20 @@
 name: build caddy
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Caddy version to build (git ref)"
+        required: false
+        type: string
+      custom_core:
+        description: "Caddy custom core (e.g. github.com/user/caddy/v2@branch)"
+        required: false
+        type: string
+      tag_latest:
+        description: "Tag build as latest?"
+        default: false
+        required: false
+        type: boolean
   push:
     branches:
       - master
@@ -29,6 +43,31 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Determine build args
+        id: build_args
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="$(cat version.txt)"
+          fi
+
+          if [ -n "${{ github.event.inputs.custom_core }}" ]; then
+            CUSTOM_CORE="${{ github.event.inputs.custom_core }}"
+          else
+            CUSTOM_CORE=""
+          fi
+
+          BASE="ghcr.io/${{ github.repository_owner}}/caddy"
+          TAGS="$BASE:$VERSION"
+          if [ "${{ github.event_name }}" == "push" ] || [ "${{ github.event.inputs.tag_latest }}" == "true" ]; then
+            TAGS="$TAGS,$BASE:latest"
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "CUSTOM_CORE=$CUSTOM_CORE" >> $GITHUB_OUTPUT
+          echo "TAGS=$TAGS" >> $GITHUB_OUTPUT
+
       - name: Build and push
         uses: docker/build-push-action@v7
         id: build
@@ -36,5 +75,8 @@ jobs:
           context: .
           file: Dockerfile
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/zingyawesome/caddy:latest
+          tags: ${{ steps.build_args.outputs.TAGS }}
+          build-args: |
+            SELECTED_VERSION=${{ steps.build_args.outputs.VERSION }}
+            CUSTOM_CORE=${{ steps.build_args.outputs.CUSTOM_CORE }}
           push: true
