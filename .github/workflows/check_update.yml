@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   check-update:
+    name: "Check for caddy updates"
     runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@v6
@@ -19,7 +20,7 @@ jobs:
         id: release
         with:
           script: |
-            const release = await github.rest.releases.getLatest({owner: "caddyserver", repo: "caddy"});
+            const release = await github.rest.repos.getLatestRelease({owner: "caddyserver", repo: "caddy"});
             core.setOutput("TAG", release.data.tag_name);
             core.setOutput("BODY", release.data.body);
 
@@ -35,9 +36,10 @@ jobs:
             echo "DO_PR=true" >> $GITHUB_OUTPUT
           else
             echo "DO_PR=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create pull request
-        if: steps.check.outputs.DO_PR == "true"
+        if: steps.check.outputs.DO_PR == 'true'
         uses: peter-evans/create-pull-request@v8
         with:
           commit-message: Bump caddy from ${{ steps.check.outputs.OLD_VERSION }} to ${{ steps.release.outputs.TAG }}
