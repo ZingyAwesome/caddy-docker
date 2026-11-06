@@ -22,7 +22,7 @@ jobs:
           script: |
             const release = await github.rest.repos.getLatestRelease({owner: "caddyserver", repo: "caddy"});
             core.setOutput("TAG", release.data.tag_name);
-            core.setOutput("BODY", release.data.body);
+            core.setOutput("URL", release.data.html_url);
 
       - name: Check and update version
         id: check
@@ -46,14 +46,7 @@ jobs:
           title: Bump caddy from ${{ steps.check.outputs.OLD_VERSION }} to ${{ steps.release.outputs.TAG }}
           body: |
             Automated caddy update from ${{ steps.check.outputs.OLD_VERSION }} to ${{ steps.release.outputs.TAG }}
-            <details>
-            <summary>Release notes</summary>
-            <blockquote>
-
-            ${{ steps.release.outputs.BODY }}
-
-            </blockquote>
-            </details>
+            [Release notes](${{ steps.release.outputs.URL }})
           labels: dependencies
           branch: update-caddy-${{ steps.release.outputs.TAG }}
           delete-branch: true
